@@ -1,17 +1,24 @@
 package com.example.genshincharacter.models.entities;
 
+import javax.persistence.*;
+
+@Entity
+@Table(name = "characters")
 public class Character {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
     public int id;
+    @Column
     public String name;
+    @Column
     public String sex;
+    @Column
     public String element;
+    @Column
     public String weapon;
 
-    public Character(int id, String name, String sex, String element, String weapon) {
-        this.id = id;
-        this.name = name;
-        this.sex = sex;
-        this.element = element;
-        this.weapon = weapon;
+    public Character() {
+
     }
 }

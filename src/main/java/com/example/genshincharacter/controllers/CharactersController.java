@@ -1,16 +1,24 @@
 package com.example.genshincharacter.controllers;
 
-import com.example.genshincharacter.DbManager;
 import com.example.genshincharacter.models.entities.Character;
+import com.example.genshincharacter.models.tables.TableCharacters;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
+import java.util.List;
 
 @RestController
 @RequestMapping(path = "/characters", method = {RequestMethod.GET, RequestMethod.POST, RequestMethod.PUT, RequestMethod.DELETE})
 public class CharactersController {
+
+    @Autowired
+    private final TableCharacters tableCharacters;
+
+    public CharactersController(TableCharacters tableCharacters) {
+        this.tableCharacters = tableCharacters;
+    }
 
     private void checkApiKey(String apiKey) throws Exception {
         String originalApiKey = "1212";
@@ -28,44 +36,51 @@ public class CharactersController {
     }
 
     @GetMapping(value = "/getAll")
-    public ArrayList<Character> getAll(@RequestHeader("APIKEY") String apiKey) throws Exception {
+    public List<Character> getAll(@RequestHeader("APIKEY") String apiKey) throws Exception {
         checkApiKey(apiKey);
 
-        DbManager db = DbManager.getInstance();
-        return db.tableCharacters.getAll();
+        return tableCharacters.findAll();
+    }
+
+    @GetMapping(value = "/getAllWithCname")
+    public List<Character> getAllWithCname(@RequestHeader("APIKEY") String apiKey) throws Exception {
+        checkApiKey(apiKey);
+
+        return tableCharacters.findWhereNameStartsFromC();
     }
 
     @GetMapping(value = "/getById/{id}")
     public Character getById(@RequestHeader("APIKEY") String apiKey, @PathVariable int id) throws Exception {
         checkApiKey(apiKey);
 
-        DbManager db = DbManager.getInstance();
-        return db.tableCharacters.getById(id);
+        return tableCharacters.findById(id).get();
     }
 
     @PostMapping(value = "/insertOne")
     public void insertOne(@RequestHeader("APIKEY") String apiKey, @RequestBody Character character) throws Exception {
         checkApiKey(apiKey);
 
-        DbManager db = DbManager.getInstance();
-        db.tableCharacters.insertOne(character);
+        tableCharacters.save(character);
     }
 
     @DeleteMapping(value = "/deleteById/{id}")
     public void deleteById(@RequestHeader("APIKEY") String apiKey, @PathVariable int id) throws Exception {
         checkApiKey(apiKey);
 
-        DbManager db = DbManager.getInstance();
-        db.tableCharacters.getById(id);
-        db.tableCharacters.deleteById(id);
+        tableCharacters.deleteById(id);
     }
 
     @PutMapping(value = "/updateById/{id}")
     public void updateById(@RequestHeader("APIKEY") String apiKey, @PathVariable int id,@RequestBody Character character) throws Exception {
         checkApiKey(apiKey);
 
-        DbManager db = DbManager.getInstance();
-        db.tableCharacters.getById(id);
-        db.tableCharacters.updateById(id, character);
+        Character findedCharacter = tableCharacters.findById(id).get();
+
+        findedCharacter.name = character.name;
+        findedCharacter.sex = character.sex;
+        findedCharacter.element = character.element;
+        findedCharacter.weapon = character.weapon;
+
+        tableCharacters.save(findedCharacter);
     }
 }
